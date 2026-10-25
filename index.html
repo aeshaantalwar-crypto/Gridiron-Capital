@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gridiron Capital</title><meta name="color-scheme" content="dark">
+<style>
+:root{color-scheme:dark;--bg:#0c1424;--card:#131d33;--hi:#1b2a47;--line:#243452;--tx:#e8eef8;--mu:#8da0bf;--g:#3ccf91;--r:#f2796f;--y:#e8b84a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 "Avenir Next",Avenir,"Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line)}
+h1{font:600 20px/1 Georgia,"Times New Roman",serif;margin:0 12px 0 0}h1 b{color:var(--g);font-weight:600}
+h2{font-size:15px;margin:0 0 10px}nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:0;color:var(--mu);padding:7px 12px;border-radius:6px;font:inherit;cursor:pointer}
+nav button.on{background:var(--hi);color:var(--tx);box-shadow:inset 0 -2px var(--g)}
+main{max-width:1240px;margin:0 auto;padding:16px}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:16px}
+.note{border-left:3px solid var(--y);padding:6px 12px;margin-bottom:16px;color:var(--mu);background:var(--card)}
+.tw{overflow-x:auto;max-height:560px}table{width:100%;border-collapse:collapse}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--mu);font-weight:500;position:sticky;top:0;background:var(--card)}
+.l{text-align:left}tr.c{cursor:pointer}tr.c:hover,tr.s{background:var(--hi)}tr.x{opacity:.4}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}.kpi b{font-size:18px}
+.bar{height:7px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--g)}
+button.p,button.q{font:inherit;border-radius:6px;padding:7px 12px;cursor:pointer;border:1px solid var(--g)}
+button.p{background:var(--g);color:#06241a;font-weight:600}button.q{background:none;color:var(--g)}button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+input,select,textarea{background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit}textarea{width:100%;height:90px}
+.bar-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.up{color:var(--g)}.dn{color:var(--r)}.mu{color:var(--mu)}.pos{display:inline-block;min-width:26px;text-align:center;border-radius:4px;background:var(--hi);color:var(--mu);font-size:11px;margin-right:6px}
+.chip.on{background:var(--hi)}small{color:var(--mu)}li{margin-bottom:4px}
+</style></head><body><div id="app"></div><script>
+const POS=['QB','RB','WR','TE'],MIN={QB:1,RB:2,WR:2,TE:1},T=10,SZ=15,FL=0.8;
+const f1=x=>x.toFixed(1),M=x=>'$'+f1(x)+'M',sg=x=>(x>=0?'+':'−')+f1(Math.abs(x)),E=i=>document.getElementById(i);
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0),kp=(a,b)=>`<div><small>${a}</small><br><b>${b}</b></div>`;
+let P=[],S,sel=null,tab='draft',fp='ALL',q='',sk='sur',msg='';
+function rng(s){return()=>(s=(s*1664525+1013904223)>>>0)/4294967296}
+function gen(){const r=rng(2026),fn='Marcus Devon Jalen Andre Tyrell Colby Rhett Silas Dante Ezra Kellen Nolan Omar Pax Quinn Rowan Soren Tobias Ulrich Vance Wyatt Xavier Zane Brock Leif'.split(' '),
+ln='Alder Brannock Corvane Dunmore Elkhart Fennimore Garrow Halvorsen Ibsley Jarrow Kestrel Lockridge Marlowe Norcott Ostrander Penhallow Quillan Rexford Sterling Thornbury Underhill Valcourt Wexley Yarrow Zephyr Ashgrove Baskin Calloway Draycott Everhart'.split(' ');
+const spec={QB:[28,400,185,55],RB:[62,300,60,21],WR:[92,310,55,34],TE:[38,240,50,17]},nm=new Set();let id=0;
+for(const k of POS){const[n,hi,lo,top]=spec[k];for(let i=0;i<n;i++){let a;do a=fn[r()*fn.length|0]+' '+ln[r()*ln.length|0];while(nm.has(a));nm.add(a);
+const pts=Math.round((lo+(hi-lo)*Math.pow(1-i/n,2))*(.95+.1*r())),rk=r()<.14,c=rk?.8+r()*5:top*Math.pow(pts/hi,2.2)*(.6+.8*r());
+P.push({id:id++,n:a,p:k,pts,rk,base:Math.max(FL,Math.round(c*10)/10)})}}}
+function model(){P.forEach(p=>p.c=S.ov[p.id]??p.base);
+const rr={QB:T,RB:Math.round(2.8*T),WR:3*T,TE:Math.round(1.2*T)},rp={};
+for(const k of POS){const a=P.filter(x=>x.p===k).map(x=>x.pts).sort((a,b)=>b-a);rp[k]=a[rr[k]]}
+P.forEach(p=>p.vorp=Math.max(0,p.pts-rp[p.p]));
+const tv=sum(P,p=>p.vorp),pool=T*S.cap-T*SZ*FL;
+P.forEach(p=>{p.fair=FL+pool*p.vorp/tv;p.sur=p.fair-p.c;p.ppm=p.pts/p.c;p.cpp=p.c/p.pts;const z=p.fair/p.c;p.tag=z>1.25?'Undervalued':z<.8?'Overvalued':'Fair'});
+for(const k of POS){const a=P.filter(x=>x.p===k),n=a.length,mx=sum(a,x=>x.c)/n,my=sum(a,x=>x.pts)/n;let sxy=0,sxx=0;
+a.forEach(x=>{sxy+=(x.c-mx)*(x.pts-my);sxx+=(x.c-mx)**2});const b=sxy/sxx;a.forEach(x=>x.alpha=x.pts-(my+b*(x.c-mx)))}
+const pc=(A,v)=>A.filter(x=>x<=v).length/A.length,pv=P.map(x=>x.vorp),ps=P.map(x=>x.sur);
+P.forEach(p=>p.ier=Math.round(100*(.5*pc(P.filter(x=>x.p===p.p).map(x=>x.ppm),p.ppm)+.3*pc(pv,p.vorp)+.2*pc(ps,p.sur))))}
+function lineup(ro){const st=[];[['QB',1],['RB',2],['WR',2],['TE',1]].forEach(([k,n])=>ro.filter(x=>x.p===k).sort((a,b)=>b.pts-a.pts).slice(0,n).forEach(x=>st.push([k,x])));
+const u=new Set(st.map(s=>s[1]));ro.filter(x=>x.p!=='QB'&&!u.has(x)).sort((a,b)=>b.pts-a.pts).slice(0,2).forEach(x=>st.push(['FLEX',x]));
+const us=new Set(st.map(s=>s[1]));return{st,bn:ro.filter(x=>!us.has(x)),pts:sum(st,s=>s[1].pts)}}
+const tm=k=>{const r=k/10|0,i=k%10;return r%2?9-i:i},me=()=>S.slot-1;
+const rosters=()=>{const R=Array.from({length:T},()=>[]);S.picks.forEach((id,k)=>R[tm(k)].push(P[id]));return R};
+const avail=()=>{const t=new Set(S.picks);return P.filter(p=>!t.has(p.id)).sort((a,b)=>a.c-b.c)};
+function legal(ro,p,av){const open=SZ-ro.length-1;if(open<0)return'Roster is full';
+const cnt={QB:0,RB:0,WR:0,TE:0};ro.concat(p).forEach(x=>cnt[x.p]++);const used=new Set([p]);let res=0,miss=0;
+const grab=(f,n)=>{for(;n>0;n--){const x=av.find(y=>!used.has(y)&&f(y));if(!x)return 0;used.add(x);res+=x.c}return 1};
+for(const k of POS){const nd=Math.max(0,MIN[k]-cnt[k]);miss+=nd;if(!grab(y=>y.p===k,nd))return'Not enough '+k+' left to finish a lineup'}
+const fm=Math.max(0,2-Math.max(0,cnt.RB-2)-Math.max(0,cnt.WR-2)-Math.max(0,cnt.TE-1));
+if(miss+fm>open)return'Leaves too few spots for required starters';
+if(!grab(y=>y.p!=='QB',fm)||!grab(()=>true,open-miss-fm))return'Player pool too thin to fill roster';
+const sp=sum(ro,x=>x.c)+p.c;return sp+res>S.cap+1e-9?`Over cap: ${M(sp)} spent plus ${M(res)} needed to fill ${open} open spots exceeds ${M(S.cap)}`:null}
+function ai(){const k=S.picks.length,ro=rosters()[tm(k)],av=avail(),cnt={QB:0,RB:0,WR:0,TE:0};ro.forEach(x=>cnt[x.p]++);let b=null,bs=-1e9;
+for(const p of av){if(legal(ro,p,av))continue;const lim=p.p==='QB'||p.p==='TE'?2:5,s=p.vorp*.9-p.c*.5+(cnt[p.p]<MIN[p.p]?10:0)-(cnt[p.p]>=lim?60:0)+Math.random()*24-12;if(s>bs){bs=s;b=p}}
+S.picks.push((b||av[0]).id)}
+function save(){try{localStorage.gc=JSON.stringify(S)}catch(e){}}
+function adv(){while(S.picks.length<T*SZ&&tm(S.picks.length)!==me())ai();save()}
+function pick(id){const ro=rosters()[me()],av=avail(),e=legal(ro,P[id],av);if(tm(S.picks.length)!==me()||e){msg=e||'It is not your pick yet';return render()}S.picks.push(id);sel=null;msg='';adv();render()}
+function undo(){let i=S.picks.length-1;while(i>=0&&tm(i)!==me())i--;if(i<0)return;S.picks.length=i;sel=null;save();render()}
+function nd(){S={cap:Math.max(40,+E('capIn').value||150),slot:Math.min(10,Math.max(1,+E('slotIn').value||4)),picks:[],ov:S.ov};sel=null;msg='';model();adv();tab='draft';render()}
+function imp(){if(S.picks.length){msg='Contracts are snapshotted when a draft starts. Start a new draft, then import.';return render()}
+let ok=0,bad=0;const seen=new Set();for(const l of E('csv').value.trim().split(/\n/)){const[a,b]=l.split(',').map(s=>s.trim()),p=P.find(x=>String(x.id)===a||x.n.toLowerCase()===(a||'').toLowerCase()),v=parseFloat(b);
+if(!p||!(v>0)||seen.has(p.id)){bad++;continue}seen.add(p.id);S.ov[p.id]=v;ok++}
+msg=`Imported ${ok} contracts and rejected ${bad} rows (unknown player, duplicate, or invalid AAV).`;model();save();render()}
+function optimize(ro,av){const lu=lineup(ro),have={QB:0,RB:0,WR:0,TE:0};lu.st.forEach(([s,x])=>{if(s!=='FLEX')have[x.p]++});
+const need={QB:1-have.QB,RB:2-have.RB,WR:2-have.WR,TE:1-have.TE},fx=2-lu.st.filter(s=>s[0]==='FLEX').length,open=SZ-ro.length;
+if(!open||!(fx||POS.some(k=>need[k])))return{none:1};const g0=av[0].c,B=Math.floor((S.cap-sum(ro,x=>x.c)-open*g0)*2+1e-9);if(B<0)return null;
+const gdp=(k,n)=>{let pool=av.filter(x=>x.p===k).sort((a,b)=>b.pts-a.pts),cand=[];for(let L=0;L<3;L++){let m=1e9;const rest=[];for(const x of pool){if(x.c<m){cand.push(x);m=x.c}else rest.push(x)}pool=rest}
+const d=Array.from({length:n+1},(_,j)=>Array.from({length:B+1},()=>({v:j?-1e9:0,p:[]})));
+for(const x of cand){const c=Math.ceil((x.c-g0)*2-1e-9);for(let j=n;j>0;j--)for(let b=B;b>=c;b--){const s=d[j-1][b-c];if(s.v+x.pts>d[j][b].v)d[j][b]={v:s.v+x.pts,p:s.p.concat(x)}}}return d[n]};
+let best=null;for(let a=0;a<=fx;a++)for(let b=0;a+b<=fx;b++){const c=fx-a-b,gr=[['QB',need.QB],['RB',need.RB+a],['WR',need.WR+b],['TE',need.TE+c]].filter(g=>g[1]>0);
+let cur=Array.from({length:B+1},()=>({v:0,p:[]}));
+for(const[k,n]of gr){const g=gdp(k,n),nx=Array.from({length:B+1},()=>({v:-1e9,p:[]}));
+for(let b=0;b<=B;b++)for(let x=0;x<=b;x++){const A=cur[b-x],G=g[x];if(A.v>-1e8&&G.v>-1e8&&A.v+G.v>nx[b].v)nx[b]={v:A.v+G.v,p:A.p.concat(G.p)}}cur=nx}
+if(cur[B].v>-1e8&&(!best||cur[B].v>best.v))best=cur[B]}return best}
+function vDraft(){const k=S.picks.length,ro=rosters()[me()],av=avail(),done=k>=T*SZ,mine=!done&&tm(k)===me(),sp=sum(ro,x=>x.c),open=SZ-ro.length;
+let rows=P.filter(p=>!S.picks.includes(p.id)&&(fp==='ALL'||p.p===fp)&&p.n.toLowerCase().includes(q.toLowerCase())).sort((a,b)=>sk==='c'?a.c-b.c:b[sk]-a[sk]).slice(0,60);
+const tr=rows.map(p=>{const e=mine?legal(ro,p,av):'';return`<tr class="c${p.id===sel?' s':''}${e?' x':''}" title="${e||''}" onclick="sel=${p.id};render()"><td class="l"><span class="pos">${p.p}</span>${p.n}${p.rk?' <small>rookie deal</small>':''}${S.ov[p.id]?' <small>CSV</small>':''}</td><td>${M(p.c)}</td><td>${p.pts}</td><td>${f1(p.ppm)}</td><td class="${p.sur>=0?'up':'dn'}">${sg(p.sur)}</td></tr>`}).join('');
+let h=`<div class="card"><div class="kpi">${kp('Pick',done?'Draft complete':'#'+(k+1)+', round '+((k/10|0)+1))}${kp('On the clock',done?'None':tm(k)===me()?'You':'Team '+(tm(k)+1))}${kp('Cap space',M(S.cap-sp))}${kp('Open roster spots',open)}${kp('Average per open spot',open?M((S.cap-sp)/open):'None')}</div><div class="bar"><i style="width:${sp/S.cap*100}%"></i></div></div>`;
+h+=`<div class="grid"><div class="card"><div class="bar-row">${['ALL',...POS].map(x=>`<button class="q chip${fp===x?' on':''}" onclick="fp='${x}';render()">${x}</button>`).join('')}<input id="qi" placeholder="Search players" value="${q}" onchange="q=this.value;render()"><select onchange="sk=this.value;render()">${[['sur','Sort: surplus'],['pts','Sort: projected points'],['ppm','Sort: points per $1M'],['c','Sort: cost']].map(o=>`<option value="${o[0]}"${sk===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select></div>
+<div class="tw"><table><tr><th class="l">Player</th><th title="Contract AAV in millions: the fantasy salary">Cost</th><th title="Projected season PPR points (synthetic)">Proj</th><th title="Projected points per $1M of cost">Pts/$M</th><th title="Model fair value minus cost">Surplus</th></tr>${tr||'<tr><td class="l" colspan="5">No players match these filters.</td></tr>'}</table></div></div><div>`;
+const p=sel!=null&&!S.picks.includes(sel)?P[sel]:null;h+=`<div class="card"><h2>Cap impact preview</h2>`;
+if(!p)h+='<p class="mu">Select a player to see how the pick changes your budget, roster and projected points.</p>';else{
+const e=legal(ro,p,av),r2=ro.concat(p),l0=lineup(ro),l1=lineup(r2),top3=x=>sum(x.map(y=>y.c).sort((a,b)=>b-a).slice(0,3),y=>y)/Math.max(.1,sum(x,y=>y.c)),opn=open-1;
+const fut=e?'—':av.filter(x=>x!==p&&!legal(r2,x,av.filter(y=>y!==p))).length;
+h+=`<b>${p.n}</b> <small>${p.p}, ${M(p.c)}, ${p.tag.toLowerCase()}</small><table><tr><td class="l">Cap space</td><td>${M(S.cap-sp)} to ${M(S.cap-sp-p.c)}</td></tr><tr><td class="l">Average per open spot</td><td>${opn?M((S.cap-sp-p.c)/opn):'None'}</td></tr><tr><td class="l">Lineup filled</td><td>${l0.st.length}/8 to ${l1.st.length}/8</td></tr><tr><td class="l">Projected lineup points</td><td>${l0.pts} to ${l1.pts} (${sg(l1.pts-l0.pts)})</td></tr><tr><td class="l">Share of cap in this pick</td><td>${f1(p.c/S.cap*100)}%</td></tr><tr><td class="l">Top 3 contracts share of spend</td><td>${f1(top3(ro)*100)}% to ${f1(top3(r2)*100)}%</td></tr><tr><td class="l">Players still draftable by you</td><td>${fut}</td></tr></table>`;
+h+=e?`<p class="dn">${e}</p>`:'';h+=`<p><button class="p" ${mine&&!e?'':'disabled'} onclick="pick(${p.id})">Draft ${p.n}</button> <button class="q" onclick="sel=null;render()">Clear</button></p>`}
+h+=msg?`<p class="dn">${msg}</p>`:'';h+='</div>';
+h+=`<div class="card"><h2>Budget optimizer</h2>`;let o=null;try{o=mine?optimize(ro,av):0}catch(e){o=null}
+if(!mine)h+='<p class="mu">Available when you are on the clock.</p>';else if(o&&o.none)h+='<p class="mu">Your starting lineup is full.</p>';else if(!o)h+='<p class="mu">No complete lineup fits the remaining budget and pool.</p>';
+else h+=`<p class="mu">Best way to fill your open starter slots from the current pool, with room reserved for every other roster spot:</p><ul>${o.p.map(x=>`<li><a href="#" style="color:var(--g)" onclick="sel=${x.id};render();return false">${x.n}</a> <small>${x.p}, ${M(x.c)}, ${x.pts} pts</small></li>`).join('')}</ul><small>${M(sum(o.p,x=>x.c))} for +${o.v} projected points.</small>`;
+h+=`</div><div class="card"><h2>Recent picks</h2><button class="q" onclick="undo()" ${S.picks.some((_,i)=>tm(i)===me())?'':'disabled'}>Undo my last pick</button><ul>${S.picks.slice(-8).reverse().map((id,i)=>{const n=S.picks.length-1-i,x=P[id];return`<li><small>#${n+1} ${tm(n)===me()?'You':'Team '+(tm(n)+1)}</small> ${x.n} <small>${x.p}, ${M(x.c)}</small></li>`}).join('')||'<li class="mu">No picks yet.</li>'}</ul></div></div></div>`;return h}
+function vFran(){const ro=rosters()[me()],lu=lineup(ro),sp=sum(ro,x=>x.c),sur=sum(ro,x=>x.sur);
+if(!ro.length)return'<div class="card"><p class="mu">Your roster is empty. Make a pick in the Draft room to start building your franchise.</p></div>';
+const ps=POS.map(k=>({k,c:sum(ro.filter(x=>x.p===k),x=>x.c),n:ro.filter(x=>x.p===k).length,pt:sum(lu.st.filter(s=>s[1].p===k),s=>s[1].pts)})),mx=Math.max(...ps.map(x=>x.c))/sp,t2=sum(ro.map(x=>x.c).sort((a,b)=>b-a).slice(0,2),x=>x)/sp,risk=Math.round(100*(.5*t2+.5*mx));
+const stc=sum(lu.st,s=>s[1].c);
+let h=`<div class="card"><div class="kpi">${kp('Cap used',M(sp)+' of '+M(S.cap))}${kp('Cap space',M(S.cap-sp))}${kp('Utilization',f1(sp/S.cap*100)+'%')}${kp('Projected starter points',lu.pts)}${kp('Cost per starter point','$'+f1(stc/Math.max(1,lu.pts)*1000)+'K')}${kp('Starter points per $1M',f1(lu.pts/Math.max(.1,stc)))}${kp('Roster surplus',sg(sur)+'M')}${kp('<span title="Half the share of spend in your top 2 contracts plus half the share in your largest position group. Team, bye-week and availability inputs are not in this demo.">Portfolio risk</span>',risk+' '+(risk<35?'(low)':risk<50?'(moderate)':'(high)'))}</div></div>`;
+h+=`<div class="grid"><div class="card"><h2>Spending versus production by position</h2>${ps.map(x=>`<p><b>${x.k}</b> <small>${x.n} players, ${M(x.c)}, ${f1(x.c/sp*100)}% of spend, ${f1(x.pt/Math.max(1,lu.pts)*100)}% of starter points</small><span class="bar"><i style="width:${x.c/sp*100}%"></i></span><span class="bar"><i style="width:${x.pt/Math.max(1,lu.pts)*100}%;background:var(--y)"></i></span></p>`).join('')}<small>Green is share of spend, gold is share of projected starter points. Gold shorter than green means that position costs more than it produces.</small></div>
+<div class="card"><h2>Roster</h2><div class="tw"><table>${lu.st.concat(lu.bn.map(x=>['Bench',x])).map(([s,x])=>`<tr><td class="l"><span class="pos">${s==='Bench'?'BN':s==='FLEX'?'FX':s}</span>${x.n}</td><td>${M(x.c)}</td><td>${x.pts}</td><td class="${x.sur>=0?'up':'dn'}">${sg(x.sur)}</td></tr>`).join('')}</table></div></div></div>`;return h}
+function vEx(){const rows=P.filter(p=>fp==='ALL'||p.p===fp).sort((a,b)=>sk==='c'?a.c-b.c:b[sk]-a[sk]).slice(0,80);
+return`<div class="card"><h2>The Exchange</h2><div class="bar-row">${['ALL',...POS].map(x=>`<button class="q chip${fp===x?' on':''}" onclick="fp='${x}';render()">${x}</button>`).join('')}<select onchange="sk=this.value;render()">${[['sur','Sort: surplus'],['ppm','Sort: points per $1M'],['ier','Sort: efficiency rating'],['alpha','Sort: Cap Alpha'],['vorp','Sort: VORP']].map(o=>`<option value="${o[0]}"${sk===o[0]?' selected':''}>${o[1]}</option>`).join('')}</select></div><small>Fair values are model estimates of fantasy worth, not NFL contract evaluations. Value history needs weekly data, which is not in this demo.</small>
+<div class="tw"><table><tr><th class="l">Player</th><th>Cost</th><th title="Model estimate: league budget shared out by VORP">Fair value</th><th>Surplus</th><th>Pts/$M</th><th title="Dollars per projected point">$/pt</th><th title="Value over replacement player">VORP</th><th title="Points above what the pool of same-position players at this salary typically produce. Small samples, treat with care.">Cap Alpha</th><th title="0 to 100, weights in Rules">Rating</th><th>Status</th></tr>${rows.map(p=>`<tr><td class="l"><span class="pos">${p.p}</span>${p.n}</td><td>${M(p.c)}</td><td>${M(p.fair)}</td><td class="${p.sur>=0?'up':'dn'}">${sg(p.sur)}</td><td>${f1(p.ppm)}</td><td>$${p.cpp.toFixed(2)}M</td><td>${f1(p.vorp)}</td><td class="${p.alpha>=0?'up':'dn'}">${sg(p.alpha)}</td><td>${p.ier}</td><td class="${p.tag==='Undervalued'?'up':p.tag==='Overvalued'?'dn':'mu'}">${p.tag}</td></tr>`).join('')}</table></div></div>`}
+function vSet(){return`<div class="grid"><div><div class="card"><h2>Commissioner settings</h2><div class="bar-row"><label>Salary cap ($M) <input id="capIn" type="number" min="40" value="${S.cap}" style="width:80px"></label><label>Your draft slot (1 to 10) <input id="slotIn" type="number" min="1" max="10" value="${S.slot}" style="width:60px"></label><button class="p" onclick="nd()">Start new draft</button></div><small>10 teams, 15-player rosters, snake draft, 1 QB, 2 RB, 2 WR, 1 TE, 2 FLEX, full PPR. Costs use contract AAV. Cap-hit pricing is not in this demo.</small>${msg?`<p class="dn">${msg}</p>`:''}</div>
+<div class="card"><h2>Import contracts (CSV)</h2><p class="mu">One row per player: player name or id, AAV in $M. Rows with unknown players, duplicates or invalid AAV are rejected. Import before a draft starts.</p><textarea id="csv" placeholder="Marcus Alder,12.5"></textarea><p><button class="q" onclick="imp()">Validate and import</button></p></div></div>
+<div class="card"><h2>Rules and formulas</h2><ul><li><b>Cost</b> is contract AAV in $M. Every contract here is synthetic and fictional.</li><li><b>VORP</b> is projected points minus the replacement player: the player ranked just past league demand at that position (flex slots split RB 8, WR 10, TE 2).</li><li><b>Fair value</b> is $0.8M plus a share of the remaining league budget in proportion to VORP.</li><li><b>Surplus</b> is fair value minus cost. Undervalued means fair value is more than 1.25 times cost, overvalued means less than 0.8.</li><li><b>Rating</b> is 50% points per $M percentile in position, 30% VORP percentile and 20% surplus percentile. Consistency and trend inputs need weekly data.</li><li><b>Cap Alpha</b> is projected points minus the points a linear fit of same-position players predicts for that cost.</li><li><b>Draft legality</b>: a pick is allowed only if you can still afford the cheapest players left to fill required starters and every open spot.</li></ul>
+<h2>Not built yet</h2><ul><li>Accounts, invitations and multiplayer drafting</li><li>Weekly scoring, standings, trades, free agency</li><li>Real stats and contract feeds with an authorized source, Postgres storage, tests</li><li>Value history, backtesting, dynasty mode</li></ul></div></div>`}
+function render(){const T2=[['draft','Draft room'],['fran','My franchise'],['ex','The Exchange'],['set','Settings and rules']];
+E('app').innerHTML=`<header><h1>Gridiron <b>Capital</b></h1><nav>${T2.map(t=>`<button class="${tab===t[0]?'on':''}" onclick="tab='${t[0]}';render()">${t[1]}</button>`).join('')}</nav></header><main><div class="note">Fictional demo data: every player and contract is synthetic, not a real NFL contract. Valuations are model estimates. Your league saves in this browser.</div>${{draft:vDraft,fran:vFran,ex:vEx,set:vSet}[tab]()}</main>`}
+gen();try{S=JSON.parse(localStorage.gc)}catch(e){}S=S&&S.picks?S:{cap:150,slot:4,picks:[],ov:{}};model();adv();render();
+</script></body></html>
